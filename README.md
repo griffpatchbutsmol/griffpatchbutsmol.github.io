@@ -1,1 +1,1 @@
-A website made to encrypt Noah's Tutoring Hub  
+# Worried about the School Blockers implemented that prevent you from having any fun.
