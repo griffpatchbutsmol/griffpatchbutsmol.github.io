@@ -119,7 +119,7 @@
     <!-- Selection Screen Sidebar -->
     <div id="sidebar">
         <h2>Available Pages</h2>
-        <div class="repo-subtitle" id="repoIdent">Detecting repository layout...</div>
+        <div class="repo-subtitle" id="repoIdent">Live Site Environment</div>
         <ul class="file-list" id="fileList"></ul>
         <button id="fullscreen-btn" disabled>Go Fullscreen</button>
     </div>
@@ -136,71 +136,45 @@
         const statusText = document.getElementById('statusText');
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         const viewerContainer = document.getElementById('viewer-container');
-        const repoIdent = document.getElementById('repoIdent');
 
-        // ==========================================
-        // AUTOMATED REPOSITORY LOOKUP LOGIC
-        // ==========================================
         function initializeDashboard() {
-            const hostname = window.location.hostname;
-            const pathname = window.location.pathname;
+            statusText.textContent = "Scanning folder structure for HTML components...";
 
-            // Handle fallback parsing if running locally or using a custom root domain
-            let username = "";
-            let repoName = "";
-
-            if (hostname.endsWith('.github.io')) {
-                // Standard GitHub Pages layout: username.github.io/repo-name/
-                username = hostname.split('.')[0];
-                repoName = pathname.split('/').filter(Boolean)[0] || "";
-            }
-
-            // Fallback checking to ensure the page doesn't crash if configuration parsing skips
-            if (!username || !repoName) {
-                repoIdent.textContent = "Running Outside GitHub Pages Environment";
-                statusText.innerHTML = "To auto-scan your code, deploy this file to a live <b>GitHub Pages</b> branch.<br><br>Otherwise, open your browser Console to debug local paths manually.";
-                return;
-            }
-
-            repoIdent.textContent = `${username} / ${repoName}`;
-            scanRepository(username, repoName);
-        }
-
-        // ==========================================
-        // CALL THE GITHUB REST API DYNAMICALLY
-        // ==========================================
-        function scanRepository(username, repo) {
-            const BRANCH = "main"; // Change this configuration to "master" if your default branch relies on it
-            const apiUrl = `https://github.com{username}/${repo}/git/trees/${BRANCH}?recursive=1`;
-
-            statusText.textContent = "Scanning source code for alternate HTML components...";
-
-            fetch(apiUrl)
+            // Natively request a file tree listing directly from the current web directory path
+            fetch('./')
                 .then(response => {
-                    if (!response.ok) throw new Error("API resolution failure.");
-                    return response.json();
+                    if (!response.ok) throw new Error("Could not parse file index layout.");
+                    return response.text();
                 })
-                .then(data => {
-                    // Collect everything ending with .html while excluding index.html natively
-                    const htmlFiles = data.tree
-                        .filter(file => 
-                            file.type === "blob" && 
-                            file.path.endsWith('.html') && 
-                            file.path.toLowerCase() !== 'index.html'
-                        )
-                        .map(file => file.path);
+                .then(htmlText => {
+                    // Turn raw text index into a searchable document fragment
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    const links = Array.from(doc.querySelectorAll('a'));
 
-                    if (htmlFiles.length === 0) {
-                        statusText.textContent = "No separate application HTML files found in this repository tree.";
+                    // Filter links to find valid HTML pages while explicitly skipping index.html
+                    const htmlFiles = links
+                        .map(link => link.getAttribute('href'))
+                        .filter(href => {
+                            if (!href) return false;
+                            const lowerHref = href.toLowerCase();
+                            return lowerHref.endsWith('.html') && !lowerHref.includes('index.html');
+                        });
+
+                    // Remove duplicate paths that some directory index servers generate
+                    const uniqueFiles = [...new Set(htmlFiles)];
+
+                    if (uniqueFiles.length === 0) {
+                        statusText.textContent = "No separate application HTML files found in this directory.";
                         return;
                     }
 
                     statusText.textContent = "Please select an asset from the menu panel";
-                    buildMenu(htmlFiles);
+                    buildMenu(uniqueFiles);
                 })
                 .catch(err => {
                     console.error(err);
-                    statusText.textContent = "Unable to fetch code layout. Double check if this repository configuration profile matches your default Git branch naming rules.";
+                    statusText.innerHTML = "Unable to fetch code layout automatically.<br><br>If you are previewing this locally, you must use a local server environment (like Live Server extension in VS Code) rather than clicking the file directly.";
                 });
         }
 
@@ -220,7 +194,7 @@
                 
                 li.textContent = cleanName;
                 li.style.textTransform = "capitalize";
-                li.title = file; // Hover tooltip shows complete file system pathway
+                li.title = file; // Hover tooltip shows complete file path
                 
                 li.onclick = () => renderFrameContent(file, li);
                 fileListEl.appendChild(li);
