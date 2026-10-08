@@ -1,168 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Noahs Tutoring Hub</title>
-  <style>
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    iframe {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-      border: 0;
-    }
-
-    #password-gate {
-      position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      box-sizing: border-box;
-      background:
-        radial-gradient(ellipse at 15% 15%, rgba(255, 122, 26, 0.14), transparent 42%),
-        radial-gradient(ellipse at 85% 85%, rgba(255, 165, 0, 0.1), transparent 40%),
-        #090909;
-      color: #f8fafc;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    #password-form {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      width: min(360px, 100%);
-      padding: 36px;
-      box-sizing: border-box;
-      border: 1px solid rgba(255, 145, 0, 0.3);
-      border-radius: 20px;
-      background: rgba(18, 18, 18, 0.94);
-      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65), 0 0 28px rgba(255, 122, 26, 0.08);
-      backdrop-filter: blur(14px);
-    }
-
-    #password-form label {
-      margin-bottom: 4px;
-      font-size: 1.2rem;
-      font-weight: 650;
-      letter-spacing: -0.02em;
-    }
-
-    #password-form input,
-    #password-form button {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 13px 15px;
-      border-radius: 10px;
-      font: inherit;
-    }
-
-    #password-form input {
-      border: 1px solid rgba(255, 145, 0, 0.55);
-      outline: none;
-      background: #111;
-      color: #fff;
-      transition: border-color 160ms ease, box-shadow 160ms ease;
-    }
-
-    #password-form input::placeholder {
-      color: #a66a2c;
-    }
-
-    #password-form input:focus {
-      border-color: #ff9100;
-      box-shadow: 0 0 0 3px rgba(255, 145, 0, 0.18), 0 0 16px rgba(255, 145, 0, 0.12);
-    }
-
-    #password-form button {
-      border: 1px solid #ff9100;
-      background: linear-gradient(135deg, #c65300, #ff9100);
-      color: white;
-      font-weight: 650;
-      cursor: pointer;
-      transition: filter 160ms ease, transform 160ms ease;
-    }
-
-    #password-form button:hover {
-      filter: brightness(1.12);
-    }
-
-    #password-form button:active {
-      transform: translateY(1px);
-    }
-
-    #password-form button:focus-visible {
-      outline: 3px solid #FF7A1A;
-      outline-offset: 3px;
-    }
-
-    #password-error {
-      min-height: 1.2em;
-      color: #ff9b2f;
-      font-size: 0.9rem;
-    }
-
-    @media (max-width: 420px) {
-      #password-form {
-        padding: 28px 22px;
-      }
-    }
-
-    #content[hidden],
-    #password-gate[hidden] {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repository Selection Hub</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* Selection Sidebar Layout */
+        #sidebar {
+            width: 320px;
+            background-color: #161b22;
+            border-right: 1px solid #30363d;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 10;
+        }
+        h2 {
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+            color: #58a6ff;
+            font-weight: 600;
+        }
+        .repo-subtitle {
+            font-size: 0.8rem;
+            color: #8b949e;
+            margin-bottom: 20px;
+            word-break: break-all;
+        }
+        .file-list {
+            list-style: none;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .file-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .file-item:hover {
+            background-color: #30363d;
+            border-color: #8b949e;
+        }
+        .file-item.active {
+            background-color: #1f6feb;
+            border-color: #58a6ff;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        /* Fullscreen Expansion Controller */
+        #fullscreen-btn {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #238636;
+            color: #fff;
+            border: 1px solid rgba(240,246,252,0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        #fullscreen-btn:hover:not(:disabled) {
+            background-color: #2ea043;
+        }
+        #fullscreen-btn:disabled {
+            background-color: #21262d;
+            color: #484f58;
+            cursor: not-allowed;
+            border-color: #30363d;
+        }
+        /* Main Application Presentation Area */
+        #viewer-container {
+            flex-grow: 1;
+            position: relative;
+            background-color: #000;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #fff; 
+        }
+        .status-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #8b949e;
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
-  <main id="password-gate">
-    <form id="password-form">
-      <label for="password">Enter the password to continue</label>
-      <input id="password" type="password" autocomplete="current-password" required>
-      <button type="submit">Unlock</button>
-      <div id="password-error" role="alert" aria-live="polite"></div>
-    </form>
-  </main>
 
-  <div id="content" hidden>
-    <iframe src="https://www.qgpb2vv4e7volks7.3351dcb3.nip.io/" title="Full-screen content"></iframe>
-  </div>
+    <!-- Selection Screen Sidebar -->
+    <div id="sidebar">
+        <h2>Available Pages</h2>
+        <div class="repo-subtitle" id="repoIdent">Detecting repository layout...</div>
+        <ul class="file-list" id="fileList"></ul>
+        <button id="fullscreen-btn" disabled>Go Fullscreen</button>
+    </div>
 
-  <script>
-    const PASSWORD = "ReallyLongPassword";
-    const passwordGate = document.getElementById("password-gate");
-    const content = document.getElementById("content");
-    const passwordForm = document.getElementById("password-form");
-    const passwordInput = document.getElementById("password");
-    const passwordError = document.getElementById("password-error");
-    const unlockKey = "fullscreen-content-unlocked";
+    <!-- Presentation Area -->
+    <div id="viewer-container">
+        <div class="status-message" id="statusText">Analyzing deployment configurations...</div>
+        <iframe id="contentViewer" style="display: none;"></iframe>
+    </div>
 
-    if (localStorage.getItem(unlockKey) === "true") {
-      passwordGate.hidden = true;
-      content.hidden = false;
-    }
+    <script>
+        const fileListEl = document.getElementById('fileList');
+        const iframe = document.getElementById('contentViewer');
+        const statusText = document.getElementById('statusText');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const viewerContainer = document.getElementById('viewer-container');
+        const repoIdent = document.getElementById('repoIdent');
 
-    passwordForm.addEventListener("submit", (event) => {
-      event.preventDefault();
+        // ==========================================
+        // AUTOMATED REPOSITORY LOOKUP LOGIC
+        // ==========================================
+        function initializeDashboard() {
+            const hostname = window.location.hostname;
+            const pathname = window.location.pathname;
 
-      if (passwordInput.value === PASSWORD) {
-        localStorage.setItem(unlockKey, "true");
-        passwordGate.hidden = true;
-        content.hidden = false;
-      } else {
-        passwordError.textContent = "Incorrect password. Please try again.";
-        passwordInput.select();
-      }
-    });
-  </script>
+            // Handle fallback parsing if running locally or using a custom root domain
+            let username = "";
+            let repoName = "";
+
+            if (hostname.endsWith('.github.io')) {
+                // Standard GitHub Pages layout: username.github.io/repo-name/
+                username = hostname.split('.')[0];
+                repoName = pathname.split('/').filter(Boolean)[0] || "";
+            }
+
+            // Fallback checking to ensure the page doesn't crash if configuration parsing skips
+            if (!username || !repoName) {
+                repoIdent.textContent = "Running Outside GitHub Pages Environment";
+                statusText.innerHTML = "To auto-scan your code, deploy this file to a live <b>GitHub Pages</b> branch.<br><br>Otherwise, open your browser Console to debug local paths manually.";
+                return;
+            }
+
+            repoIdent.textContent = `${username} / ${repoName}`;
+            scanRepository(username, repoName);
+        }
+
+        // ==========================================
+        // CALL THE GITHUB REST API DYNAMICALLY
+        // ==========================================
+        function scanRepository(username, repo) {
+            const BRANCH = "main"; // Change this configuration to "master" if your default branch relies on it
+            const apiUrl = `https://github.com{username}/${repo}/git/trees/${BRANCH}?recursive=1`;
+
+            statusText.textContent = "Scanning source code for alternate HTML components...";
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error("API resolution failure.");
+                    return response.json();
+                })
+                .then(data => {
+                    // Collect everything ending with .html while excluding index.html natively
+                    const htmlFiles = data.tree
+                        .filter(file => 
+                            file.type === "blob" && 
+                            file.path.endsWith('.html') && 
+                            file.path.toLowerCase() !== 'index.html'
+                        )
+                        .map(file => file.path);
+
+                    if (htmlFiles.length === 0) {
+                        statusText.textContent = "No separate application HTML files found in this repository tree.";
+                        return;
+                    }
+
+                    statusText.textContent = "Please select an asset from the menu panel";
+                    buildMenu(htmlFiles);
+                })
+                .catch(err => {
+                    console.error(err);
+                    statusText.textContent = "Unable to fetch code layout. Double check if this repository configuration profile matches your default Git branch naming rules.";
+                });
+        }
+
+        // ==========================================
+        // UI BINDING & FILE INTERACTION LOGIC
+        // ==========================================
+        function buildMenu(files) {
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'file-item';
+                
+                // Form clean presentation names safely out of messy pathways ("sub/my-test-case.html" -> "My Test Case")
+                const fileName = file.split('/').pop();
+                const cleanName = decodeURIComponent(fileName)
+                    .replace('.html', '')
+                    .replace(/[-_]/g, ' ');
+                
+                li.textContent = cleanName;
+                li.style.textTransform = "capitalize";
+                li.title = file; // Hover tooltip shows complete file system pathway
+                
+                li.onclick = () => renderFrameContent(file, li);
+                fileListEl.appendChild(li);
+            });
+        }
+
+        function renderFrameContent(relativePath, electedItem) {
+            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+            electedItem.classList.add('active');
+
+            statusText.style.display = 'none';
+            iframe.style.display = 'block';
+            
+            // Set frame target pointing cleanly to relative site tree asset
+            iframe.src = relativePath;
+            fullscreenBtn.disabled = false;
+        }
+
+        // ==========================================
+        // NATIVE HIGH-PERFORMANCE FULLSCREEN API
+        // ==========================================
+        fullscreenBtn.addEventListener('click', () => {
+            if (viewerContainer.requestFullscreen) {
+                viewerContainer.requestFullscreen();
+            } else if (viewerContainer.webkitRequestFullscreen) { /* Safari & iOS App Layouts */
+                viewerContainer.webkitRequestFullscreen();
+            } else if (viewerContainer.msRequestFullscreen) { /* Legacy Engine Fallbacks */
+                viewerContainer.msRequestFullscreen();
+            }
+        });
+
+        // Fire on boot
+        initializeDashboard();
+    </script>
 </body>
 </html>
